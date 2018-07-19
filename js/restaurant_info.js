@@ -70,8 +70,14 @@ fetchRestaurantFromURL = (callback) => {
         console.error(error);
         return;
       }
-      fillRestaurantHTML();
-      callback(null, restaurant)
+      DBHelper.fetchRestaurantReviews(self.restaurant, (error, reviews) => {
+        self.restaurant.reviews = reviews;
+        if (!reviews) {
+          console.error(error);
+        }
+        fillRestaurantHTML();
+        callback(null, restaurant)
+      });
     });
   }
 }
@@ -82,6 +88,12 @@ fetchRestaurantFromURL = (callback) => {
 fillRestaurantHTML = (restaurant = self.restaurant) => {
   const name = document.getElementById('restaurant-name');
   name.innerHTML = restaurant.name;
+
+  const favCheck = document.getElementById('favCheck');
+  favCheck.checked = restaurant.is_favorite;
+  favCheck.addEventListener('change', event => {
+    DBHelper.toggleFavorite(restaurant, event.target.checked);
+  });
 
   const address = document.getElementById('restaurant-address');
   address.innerHTML = restaurant.address;
@@ -129,13 +141,15 @@ fillRestaurantHoursHTML = (operatingHours = self.restaurant.operating_hours) => 
  */
 fillReviewsHTML = (reviews = self.restaurant.reviews) => {
   const container = document.getElementById('reviews-container');
-  const title = document.createElement('h2');
+  const title = document.createElement('h3');
   title.innerHTML = 'Reviews';
-  container.appendChild(title);
-
+  title.setAttribute('tabindex', 0);
+  container.prepend(title);
+  
   if (!reviews) {
     const noReviews = document.createElement('p');
     noReviews.innerHTML = 'No reviews yet!';
+    noReviews.setAttribute('tabindex', 0);
     container.appendChild(noReviews);
     return;
   }
@@ -143,37 +157,81 @@ fillReviewsHTML = (reviews = self.restaurant.reviews) => {
   reviews.forEach(review => {
     ul.appendChild(createReviewHTML(review));
   });
-  container.appendChild(ul);
 }
 
 /**
  * Create review HTML and add it to the webpage.
  */
 createReviewHTML = (review) => {
-  const li = document.createElement('li');
+ /* const li = document.createElement('li');
   const name = document.createElement('p');
-  li.setAttribute("tabIndex", "0");
   name.innerHTML = review.name;
   name.className = 'review-name';
+  name.setAttribute('tabindex', 0);
   li.appendChild(name);
 
-  const date = document.createElement('p');
-  date.innerHTML = review.date;
+  const date = document.createElement('p'); 
+  date.innerHTML = new Date(review.updatedAt).toDateString();
   date.className = 'review-date';
+  date.setAttribute('tabindex', 0);
   li.appendChild(date);
 
   const rating = document.createElement('p');
   rating.innerHTML = `Rating: ${review.rating}`;
+  rating.setAttribute('tabindex', 0);
   rating.className = 'review-rating';
   li.appendChild(rating);
 
   const comments = document.createElement('p');
   comments.innerHTML = review.comments;
+  comments.setAttribute('tabindex', 0);
   comments.className = 'review-comments';
+  li.appendChild(comments);
+
+  return li;*/
+  const li = document.createElement('li');
+  const name = document.createElement('p');
+  name.setAttribute("tabIndex", "0");
+  name.innerHTML = review.name;
+  name.className = 'review-name';
+  li.appendChild(name);
+
+  const date = document.createElement('p');
+  date.innerHTML = new Date(review.updatedAt).toDateString();
+  date.className = 'review-date';
+  date.setAttribute("tabindex","0");
+  li.appendChild(date);
+
+  const rating = document.createElement('p');
+  rating.innerHTML = `Rating: ${review.rating}`;
+  rating.className = 'review-rating';
+  rating.setAttribute("tabindex","0");
+  li.appendChild(rating);
+
+  const comments = document.createElement('p');
+  comments.innerHTML = review.comments;
+  comments.className = 'review-comments';
+  comments.setAttribute("tabindex","0");
   li.appendChild(comments);
 
   return li;
 }
+const form = document.getElementById("reviewForm");
+form.addEventListener("submit", function (event) {
+  event.preventDefault();
+  let review = {"restaurant_id": self.restaurant.id};
+  const formdata = new FormData(form);
+  for (var [key, value] of formdata.entries()) {
+    review[key] = value;
+  }
+  DBHelper.submitReview(review)
+    .then(data => {
+      const ul = document.getElementById('reviews-list');
+      ul.appendChild(createReviewHTML(review));
+      form.reset();
+    })
+    .catch(error => console.error(error))
+});
 
 /**
  * Add restaurant name to the breadcrumb navigation menu

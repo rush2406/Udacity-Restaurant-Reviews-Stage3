@@ -35,3 +35,19 @@ navigator.serviceWorker.addEventListener('controllerchange', function () {
     window.location.reload();
     refreshing = true;
 })
+
+navigator.serviceWorker.ready.then(function (swRegistration) {    
+    return swRegistration.sync.register('myFirstSync');
+});
+
+function onOnline() {
+    console.log('Going online');
+    DBHelper.submitOfflineReviews();
+}
+
+function onOffline() {
+    console.log('Going offline');
+}
+
+window.addEventListener('online', onOnline);
+window.addEventListener('offline', onOffline);

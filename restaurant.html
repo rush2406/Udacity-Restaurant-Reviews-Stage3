@@ -36,16 +36,41 @@
   <main id="maincontent">
     <!-- Beginning restaurant -->
     <section id="restaurant-container">
-      <h2 id="restaurant-name" tabindex="-1"></h2>
+      <h2 id="restaurant-name"></h2>
       <img id="restaurant-img">
-      <p id="restaurant-cuisine" tabindex="0"></p>
-      <p id="restaurant-address" tabindex="0"></p>
-      <table id="restaurant-hours" tabindex="0"></table>
+      <p><input type="checkbox" id="favCheck"> <label for="favCheck">Favorite</label></p>
+      <p id="restaurant-cuisine"></p>
+      <p id="restaurant-address"></p>
+      <table id="restaurant-hours"></table>
     </section>
     <!-- end restaurant -->
     <!-- Beginning reviews -->
     <section id="reviews-container">
       <ul id="reviews-list"></ul>
+      <form id="reviewForm">
+        <p>
+          <label for="name">Name:</label>
+          <input type="text" id="name" name="name" placeholder="Your Name" required/>
+        </p>
+        <p>&nbsp;</p>
+        <p>
+          <label for="rating">Rating</label>
+          <select name="rating">
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3" selected>3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+          </select>
+        </p>
+        <p>
+          <!-- <label for="reviewText">Review text:</label> -->
+          <textarea rows="4" name="comments" placeholder="Write your review here" required></textarea>
+        </p>
+        <p>
+          <input type="submit" value="Submit Review">
+        </p>
+      </form>
     </section>
     <!-- End reviews -->
     <section id="map-container" tabindex="-1">

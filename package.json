@@ -4,7 +4,7 @@
   "description": "Restaurant Reviews",
   "main": "",
   "scripts": {
-    "start": "python2 -m http.server 8000"
+    "start": "python -m http.server 8000"
   },
   "author": "",
   "license": "",

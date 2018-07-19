@@ -2,39 +2,39 @@
 /* CSS Document */
 
 body,td,th,p{
-	font-family: Arial, Helvetica, sans-serif;
-	font-size: 15px;
-	color: #333;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 15px;
+  color: #333;
   list-style: none;
-	line-height: 1.5;
+  line-height: 1.5;
 }
 body {
-	background-color: #fdfdfd;
-	margin: 0;
-	position:relative;
+  background-color: #fdfdfd;
+  margin: 0;
+  position:relative;
   width: 100%;
   height: 100%;
 }
 ul, li {
-	font-size: 100%;
-	color: #333;
+  font-size: 100%;
+  color: #333;
 }
 a {
-	color: #ffa801;
-	text-decoration: none;
+  color: #ffa801;
+  text-decoration: none;
 }
 a:hover, a:focus {
-	color: #3397db;
-	text-decoration: none;
+  color: #3397db;
+  text-decoration: none;
 }
 a img{
-	border: none 0px #fff;
+  border: none 0px #fff;
 }
 h1, h2, h3, h4, h5, h6 {
   margin: 0 0 20px;
 }
 article, aside, canvas, details, figcaption, figure, footer, header, hgroup, menu, nav, section {
-	display: block;
+  display: block;
 }
 #maincontent {
   background-color: #f3f3f3;
@@ -233,7 +233,7 @@ nav h1 a {
   line-height: 1.1;
 }
 #restaurant-img {
-	width: 90%;
+  width: 90%;
   border-radius: 30px;
 }
 #restaurant-address {
@@ -250,7 +250,51 @@ nav h1 a {
   padding: 2px 0;
   text-align: center;
   text-transform: uppercase;
-	width: 90%;
+  width: 90%;
+}
+#reviewForm {
+  background-color: #fff;
+  display: flex;
+  flex-wrap:wrap;
+  list-style-type: none;
+  margin: 0 0 30px;
+  overflow: hidden;
+  padding: 0;
+  position: relative;
+  border-radius: 13px 0 13px 0;
+}
+#reviewForm p {
+  margin: 0 0 10px;
+}
+#reviewForm p:nth-child(1) {
+  padding: 5px;
+  background-color: #333;
+  color: white;
+  width: calc(100% - 140px);
+}
+#reviewForm p:nth-child(2) {
+  padding: 5px;
+  background-color: #333;
+  color: #ccc;
+  width: 120px;
+}
+#reviewForm p:nth-child(3) {
+  background-color: #5DADE2;
+  color: #000;
+  padding: 4px;
+  margin-left: 5px;
+  border-radius: 3px;
+  text-transform: uppercase;
+}
+#reviewForm p:nth-child(4) {
+  margin: 0 5px 10px 5px;
+  width: 100%;
+}
+#reviewForm p:nth-child(4) textarea {
+  width: calc(100% - 5px);
+}
+#reviewForm p:nth-child(5) {
+  margin-left: 5px;
 }
 #restaurant-container, #reviews-container {
   border-bottom: 1px solid #d9d9d9;

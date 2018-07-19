@@ -38,6 +38,8 @@ http.createServer((req, res)=> {
     } else {
       return idb.open('restaurants', 1, function (upgradeDb) {
         upgradeDb.createObjectStore('all-restaurants', { keyPath: 'id' });
+        upgradeDb.createObjectStore('all-reviews', { keyPath: 'id' });
+        upgradeDb.createObjectStore('offline-reviews', { keyPath: 'updatedAt' });
       });
     }
   }
@@ -231,6 +233,143 @@ http.createServer((req, res)=> {
     );
     return marker;
   } */
+  static fetchRestaurantReviews(restaurant, callback) {
+    DBHelper.dbPromise.then(db => {
+      if (!db) return;
+      // 1. Check if there are reviews in the IDB
+      const tx = db.transaction('all-reviews');
+      const store = tx.objectStore('all-reviews');
+      store.getAll().then(results => {
+        if (results && results.length > 0) {
+          // Continue with reviews from IDB
+          callback(null, results);
+        } else {
+          // 2. If there are no reviews in the IDB, fetch reviews from the network
+          fetch(`${DBHelper.DATABASE_URL}/reviews/?restaurant_id=${restaurant.id}`)
+          .then(response => {
+            return response.json();
+          })
+          .then(reviews => {
+            this.dbPromise.then(db => {
+              if (!db) return;
+              // 3. Put fetched reviews into IDB
+              const tx = db.transaction('all-reviews', 'readwrite');
+              const store = tx.objectStore('all-reviews');
+              reviews.forEach(review => {
+                store.put(review);
+              })
+            });
+            // Continue with reviews from network
+            callback(null, reviews);
+          })
+          .catch(error => {
+            // Unable to fetch reviews from network
+            callback(error, null);
+          })
+        }
+      })
+    });
+  }
+static submitReview(data) {
+    console.log(data);
+    
+    return fetch(`${DBHelper.DATABASE_URL}/reviews`, {
+      body: JSON.stringify(data), 
+      cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
+      credentials: 'same-origin', // include, same-origin, *omit
+      headers: {
+        'content-type': 'application/json'
+      },
+      method: 'POST',
+      mode: 'cors', // no-cors, cors, *same-origin
+      redirect: 'follow', // *manual, follow, error
+      referrer: 'no-referrer', // *client, no-referrer
+    })
+    .then(response => {
+      response.json()
+        .then(data => {
+          this.dbPromise.then(db => {
+            if (!db) return;
+            // Put fetched reviews into IDB
+            const tx = db.transaction('all-reviews', 'readwrite');
+            const store = tx.objectStore('all-reviews');
+            store.put(data);
+          });
+          return data;
+        })
+    })
+    .catch(error => {
+      /**
+       * Network offline.
+       * Add a unique updatedAt property to the review
+       * and store it in the IDB.
+       */
+      data['updatedAt'] = new Date().getTime();
+      console.log(data);
+      
+      this.dbPromise.then(db => {
+        if (!db) return;
+        // Put fetched reviews into IDB
+        const tx = db.transaction('offline-reviews', 'readwrite');
+        const store = tx.objectStore('offline-reviews');
+        store.put(data);
+        console.log('Review stored offline in IDB');
+      });
+      return;
+    });
+  }
 
+  static submitOfflineReviews() {
+    DBHelper.dbPromise.then(db => {
+      if (!db) return;
+      const tx = db.transaction('offline-reviews');
+      const store = tx.objectStore('offline-reviews');
+      store.getAll().then(offlineReviews => {
+        console.log(offlineReviews);
+        offlineReviews.forEach(review => {
+          DBHelper.submitReview(review);
+        })
+        DBHelper.clearOfflineReviews();
+      })
+    })
+  }
+
+  static clearOfflineReviews() {
+    DBHelper.dbPromise.then(db => {
+      const tx = db.transaction('offline-reviews', 'readwrite');
+      const store = tx.objectStore('offline-reviews').clear();
+    })
+    return;
+  }
+
+static toggleFavorite(restaurant, isFavorite) {
+    fetch(`${DBHelper.DATABASE_URL}/restaurants/${restaurant.id}/?is_favorite=${isFavorite}`, {
+      method: 'PUT'
+    })
+    .then(response => {
+      return response.json();
+    })
+    .then(data => {
+      DBHelper.dbPromise.then(db => {
+        if (!db) return;
+        const tx = db.transaction('all-restaurants', 'readwrite');
+        const store = tx.objectStore('all-restaurants');
+        store.put(data)
+      });
+      return data;
+    })
+    .catch(error => {
+      restaurant.is_favorite = isFavorite;
+      DBHelper.dbPromise.then(db => {
+        if (!db) return;
+        const tx = db.transaction('all-restaurants', 'readwrite');
+        const store = tx.objectStore('all-restaurants');
+        store.put(restaurant);
+      }).catch(error => {
+        console.log(error);
+        return;
+      });
+    });
+  }
 }
 
